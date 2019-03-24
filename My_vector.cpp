@@ -167,7 +167,7 @@ void* operator new[](size_t size, const int line, const char* func, const char* 
 void operator delete[](void *p, const int line, const char* func, const char* inf)
 {
     fprintf(log,"'delete' in the %d line (function <%s%s>)\n", line, func, inf);
-    delete[] p;
+    free(p);
 }
 
 Vector operator +(const Vector& v1, const Vector& v2)
