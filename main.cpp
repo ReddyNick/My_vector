@@ -5,7 +5,6 @@ const int var = 3;
 
 int main() {
 
-    Vector<int> v1(3);
     Vector<bool> vb(10);
 
     vb[7] = true;
@@ -13,13 +12,19 @@ int main() {
     vb[3] = true;
     vb[2] = true;
 
-    std::cout << "size = " << vb.size() << std::endl;
+    int var = 0;
+    var = &vb[7];
 
-    for (int i = 0; i < 10; i++)
-        std::cout << i << ' ' << &vb[i] << std::endl;
 
+    if (var)
+    {
+        for (int i = 0; i < 10; i++)
+            std::cout << i << ' ' << &vb[i] << std::endl;
+    }
+
+    Vector<int> v1(3);
     Vector<int> v2(3);
-
+    
     v1[0] = 1; v1[1] = 1; v1[2] = 1;
     v2[0] = 1; v2[1] = 2; v2[2] = 3;
 
