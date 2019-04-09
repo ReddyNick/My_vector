@@ -1,7 +1,11 @@
+#ifndef MY_VECTOR_TEMPLATES_HPP
+#define MY_VECTOR_TEMPLATES_HPP
+
 #include "My_vector.h"
 #include <iostream>
 #include "stdio.h"
 #include <typeinfo>
+#include <cassert>
 
 const int more = 1;
 const int less = 0;
@@ -10,8 +14,8 @@ const double DECREASE_RATIO = 0.25;
 
 FILE* log = fopen("log.txt", "w");
 
-
-Vector::Vector():
+template<typename Type>
+Vector<Type>::Vector():
         data_(nullptr),
         capacity_(0),
         mincap_(0),
@@ -20,14 +24,16 @@ Vector::Vector():
     fprintf(log, "'new' in the %d line (function <%s 'nullptr'>)\n", __LINE__, __func__);
 }
 
-Vector::Vector(int capacity):
-        data_(new(__LINE__, __func__) data_t[capacity]{}),
+template<typename Type>
+Vector<Type>::Vector(size_t capacity):
+        data_(new(__LINE__, __func__) Type[capacity]{}),
         capacity_(capacity),
         mincap_(capacity),
         size_(capacity)
 {}
 
-Vector::~Vector()
+template<typename Type>
+Vector<Type>::~Vector()
 {
     if (this->data_ == nullptr)
         operator delete[] (data_, __LINE__, __func__, " 'nullptr'");
@@ -37,7 +43,8 @@ Vector::~Vector()
     capacity_ = size_ = -1;
 }
 
-int Vector::push_back(data_t item)
+template<typename Type>
+Type Vector<Type>::push_back(Type item)
 {
     if (size_ == capacity_)
             Resize(more);
@@ -47,7 +54,8 @@ int Vector::push_back(data_t item)
     return 0;
 }
 
-data_t Vector::pop()
+template<typename Type>
+Type Vector<Type>::pop()
 {
     if(size_ == 0)
     {
@@ -55,13 +63,14 @@ data_t Vector::pop()
         abort();
     }
 
-    data_t item = data_[--size_];
+    Type item = data_[--size_];
 
     Resize(less);
     return  item;
 }
 
-int Vector::Resize(int how)
+template<typename Type>
+int Vector<Type>::Resize(int how)
 {
     if (how == more)
     {
@@ -85,20 +94,22 @@ int Vector::Resize(int how)
     }
 }
 
-int Vector::NewData()
+template<typename Type>
+int Vector<Type>::NewData()
 {
-    data_t* newdata = new(__LINE__, __func__) data_t[capacity_];
+    Type* newdata = new(__LINE__, __func__) Type[capacity_];
 
     for (int i = 0; i < size_; i++)
         newdata[i] = data_[i];
 
-    data_t* ptr = data_;
+    Type* ptr = data_;
     data_ = newdata;
 
     delete[] ptr;
 }
 
-data_t& Vector::at(int index)
+template<typename Type>
+Type& Vector<Type>::at(size_t index)
 {
     if (index < 0 || index >= size_)
     {
@@ -109,12 +120,14 @@ data_t& Vector::at(int index)
     return data_[index];
 }
 
-data_t& Vector::operator[](int index)
+template<typename Type>
+Type& Vector<Type>::operator[](size_t index)
 {
     return at(index);
 }
 
-const data_t& Vector::operator[](int index) const
+template<typename Type>
+const Type& Vector<Type>::operator[](size_t index) const
 {
     if (index < 0 || index >= size_)
     {
@@ -124,8 +137,9 @@ const data_t& Vector::operator[](int index) const
     return data_[index];
 }
 
-Vector::Vector(const Vector &v):
-        data_(new(__LINE__, __func__, "(const Vector &v)") data_t[v.size_]),
+template<typename Type>
+Vector<Type>::Vector(const Vector<Type>& v):
+        data_(new(__LINE__, __func__, "(const Vector &v)") Type [v.size_]),
         size_(v.size_),
         capacity_(v.capacity_),
         mincap_(v.mincap_)
@@ -134,6 +148,24 @@ Vector::Vector(const Vector &v):
         data_[i] = v.data_[i];
 }
 
+template<typename Type>
+const Vector<Type>& Vector<Type>::operator=(const Vector<Type> &that)
+{
+    Vector copy (that);         // deduction -> copy is Vector<Type>
+    swap(copy);
+    return *this;
+}
+
+template<typename Type>
+void Vector<Type>::swap(Vector<Type> &copy)
+{
+    std::swap(size_, copy.size_);
+    std::swap(data_, copy.data_);
+    std::swap(capacity_, copy.capacity_);
+    std::swap(mincap_, copy.mincap_);
+}
+
+//another copy constructor
 //const Vector& Vector::operator=(const Vector &that)
 //{
 //    this-> ~Vector();
@@ -142,21 +174,7 @@ Vector::Vector(const Vector &v):
 //    return *this;
 //}
 
-const Vector& Vector::operator=(const Vector &that)
-{
-    Vector copy (that);
-    swap(copy);
 
-    return *this;
-}
-
-void Vector::swap(Vector &copy)
-{
-    std::swap(size_, copy.size_);
-    std::swap(data_, copy.data_);
-    std::swap(capacity_, copy.capacity_);
-    std::swap(mincap_, copy.mincap_);
-}
 
 void* operator new[](size_t size, const int line, const char* func, const char* inf)
 {
@@ -167,12 +185,13 @@ void* operator new[](size_t size, const int line, const char* func, const char* 
 void operator delete[](void *p, const int line, const char* func, const char* inf)
 {
     fprintf(log,"'delete' in the %d line (function <%s%s>)\n", line, func, inf);
-    free(p);
+    free(p) ;
 }
 
-Vector operator +(const Vector& v1, const Vector& v2)
+template<typename Type>
+Vector<Type> operator+(const Vector<Type>& v1, const Vector<Type>& v2)
 {
-    Vector result;
+    Vector<Type> result;
     bool left = true;
 
     if (v1.size() > v2.size())
@@ -200,8 +219,51 @@ Vector operator +(const Vector& v1, const Vector& v2)
     return result;
 }
 
-const Vector& Vector::operator=(Vector &&that)
+template<typename Type>
+const Vector<Type>& Vector<Type>::operator=(Vector<Type> &&that)
 {
     swap(that);
     return *this;
 }
+
+
+int Vector<bool>::evaluate_size(int size)
+{
+    return size/31 + ((size % 31 != 0) ? 1 : 0);
+}
+
+Vector<bool>::Vector(int size)
+{
+    size_ = 0;
+    elem_ = new Bits(evaluate_size(size));
+}
+
+Bits& Vector<bool>::operator[](int index)
+{
+     assert(index >= 0);
+     elem_->index = index;
+     return *elem_;
+}
+
+bool Bits::operator=(bool value)
+{
+    if (value)
+        data_[index / 32] |= (unsigned int)0x1 << (index % 32);
+    else
+        data_ [index / 32] &= ((unsigned int)0xFFFFFFFF - 0x1) << (index % 32);
+
+    return value;
+}
+
+bool Bits::operator&()
+{
+    return data_[index / 32] & (0x1 << (index % 32));
+}
+
+Vector<bool>::~Vector()
+{
+    size_ = -1;
+    delete elem_;
+}
+
+#endif //MY_VECTOR_TEMPLATES_HPP
