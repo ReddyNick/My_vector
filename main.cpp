@@ -24,7 +24,7 @@ int main() {
 
     Vector<int> v1(3);
     Vector<int> v2(3);
-    
+
     v1[0] = 1; v1[1] = 1; v1[2] = 1;
     v2[0] = 1; v2[1] = 2; v2[2] = 3;
 

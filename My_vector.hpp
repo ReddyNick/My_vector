@@ -179,7 +179,7 @@ void Vector<Type>::swap(Vector<Type> &copy)
 void* operator new[](size_t size, const int line, const char* func, const char* inf)
 {
     fprintf(log,"'new' in the %d line (function <%s%s>)\n", line, func, inf);
-    return new char[size];
+    return malloc(size);
 }
 
 void operator delete[](void *p, const int line, const char* func, const char* inf)
